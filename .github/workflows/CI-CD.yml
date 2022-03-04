@@ -32,7 +32,6 @@ jobs:
       run: |
          sudo apt-get install redis-server
          sudo service redis-server start
-    - name: Running Celery
-      run: celery -A core worker -l INFO
     - name: Run Server
-      run: python3 manage.py runserver
+      run: |
+        python3 manage.py runserver
