@@ -1,0 +1,38 @@
+name: CI/CD
+on: 
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Virtual Environment Setup
+      run: |
+         python3 -m venv env 
+         source env/bin/activate
+    - name: Installing Dependencies
+      run: |
+         pip install wheel
+         pip install -r requirements.txt
+    - name: Create DataBase Table and SuperUser
+      run: |
+         python3 manage.py makemigrations
+         python3 manage.py migrate
+         python3 manage.py createsuperuser
+    - name: Setup Radis
+      run: |
+         sudo apt-get install redis-server
+         sudo service redis-server start
+    - name: Running Celery
+      run: celery -A core worker -l INFO
+    - name: Run Server
+      run: python3 manage.py runserver
